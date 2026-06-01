@@ -13,38 +13,44 @@ VPC + EC2 + Nginx를 AWS CLI로 완전 자동화하여 구축한 클라우드 �
 | OS | Ubuntu 22.04 LTS |
 | Web Server | Nginx |
 
-## 아키텍처 요약
+## 아키텍처
 
-```
-Internet
-    │
-    ▼
-Internet Gateway (igw-0216170a9e1876f6f)
-    │
-    ▼
-┌─────────────────────────────────────────────┐
-│ VPC 10.0.0.0/16 (vpc-023d852a3471ef158)     │
-│                                             │
-│  ┌───────────────────────────────────────┐  │
-│  │ Public Subnet 10.0.1.0/24             │  │
-│  │ ap-northeast-2a                       │  │
-│  │                                       │  │
-│  │  Route: 0.0.0.0/0 → IGW              │  │
-│  │                                       │  │
-│  │  ┌─────────────────────────────────┐  │  │
-│  │  │ EC2 t3.micro                    │  │  │
-│  │  │ Ubuntu 22.04 / Nginx            │  │  │
-│  │  │ Public IP: 54.180.237.44        │  │  │
-│  │  │ EBS gp3 8 GiB                   │  │  │
-│  │  │                                 │  │  │
-│  │  │ SG: HTTP 80 ← 0.0.0.0/0        │  │  │
-│  │  │     SSH 22 ← 121.135.181.35/32  │  │  │
-│  │  └─────────────────────────────────┘  │  │
-│  └───────────────────────────────────────┘  │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Internet(["🌐 Internet"])
+
+    IGW["**Internet Gateway**
+    igw-0216170a9e1876f6f"]
+
+    subgraph VPC["VPC — 10.0.0.0/16"]
+        subgraph Subnet["Public Subnet — 10.0.1.0/24  ·  ap-northeast-2a"]
+            RT["**Route Table**
+            0.0.0.0/0 → IGW"]
+            SG["**Security Group**
+            HTTP :80 ← 0.0.0.0/0
+            SSH  :22 ← 121.135.181.35/32"]
+            EC2["**EC2  t3.micro**
+            Ubuntu 22.04  ·  Nginx
+            54.180.237.44
+            GET /health → 200 OK"]
+        end
+    end
+
+    Internet -->|"HTTP :80"| IGW
+    IGW --> RT
+    RT --> SG
+    SG --> EC2
+
+    style VPC    fill:#1a2332,stroke:#D9B36A,stroke-width:2px,color:#D9B36A
+    style Subnet fill:#1e2a3a,stroke:#7BBF8E,stroke-width:1.5px,color:#7BBF8E
+    style IGW    fill:#2D3544,stroke:#7FB7C9,color:#C9D1DC
+    style RT     fill:#252830,stroke:#7A848E,color:#C9D1DC
+    style SG     fill:#2D3544,stroke:#C0544B,stroke-width:2px,color:#C9D1DC
+    style EC2    fill:#2D3544,stroke:#7FB7C9,stroke-width:2px,color:#C9D1DC
+    style Internet fill:#252830,stroke:#7A848E,color:#C9D1DC
 ```
 
-아키텍처 다이어그램: [docs/architecture.png](docs/architecture.png)
+상세 다이어그램 (IAM 구조 + 트래픽 흐름): [docs/architecture.md](docs/architecture.md)
 
 ## 외부 접속 검증
 
@@ -98,13 +104,12 @@ $ curl -o /dev/null -w "%{http_code}" http://54.180.237.44/health
 codyssey-b6-1/
 ├── README.md
 ├── docs/
-│   ├── architecture.png       # 아키텍처 다이어그램
+│   ├── architecture.md        # 아키텍처 다이어그램 (Mermaid)
 │   ├── troubleshooting.md     # 트러블슈팅 보고서 (3건)
 │   └── cleanup-checklist.md   # 리소스 정리 체크리스트
 └── scripts/
     ├── iam-policy.json        # IAM 최소권한 정책
-    ├── user-data.sh           # EC2 Nginx 자동설치 스크립트
-    └── gen_diagram.py         # 아키텍처 다이어그램 생성 스크립트
+    └── user-data.sh           # EC2 Nginx 자동설치 스크립트
 ```
 
 ## 리소스 정리
