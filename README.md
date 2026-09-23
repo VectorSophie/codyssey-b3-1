@@ -1,4 +1,4 @@
-# b6-1 — AWS 웹 서비스 인프라 구축
+# b3-1 — AWS 웹 서비스 인프라 구축
 
 VPC + EC2 + Nginx를 AWS CLI로 완전 자동화하여 구축한 클라우드 인프라 실습.
 
@@ -101,7 +101,7 @@ $ curl -o /dev/null -w "%{http_code}" http://54.180.237.44/health
 ## 제출 파일 구성
 
 ```
-codyssey-b6-1/
+codyssey-b3-1/
 ├── README.md
 ├── docs/
 │   ├── architecture.md        # 아키텍처 다이어그램 (Mermaid)
